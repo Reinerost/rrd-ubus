@@ -13,6 +13,7 @@
 #include <time.h>
 
 static char rrd_base_dir[PATH_MAX];
+static int rrd_load_config(void);
 
 enum {
     XPORT_START,
@@ -127,6 +128,11 @@ rrd_xport_handler(struct ubus_context *ctx,
     int xport_count = 0;
     int ret = UBUS_STATUS_INVALID_ARGUMENT;
     size_t rows = 0;
+
+    rrd_base_dir[0] = '\0';
+
+    if (rrd_load_config() != 0)
+        return UBUS_STATUS_UNKNOWN_ERROR;
 
     if (!msg)
         return UBUS_STATUS_INVALID_ARGUMENT;
@@ -353,8 +359,6 @@ rrd_plugin_init(const struct rpc_daemon_ops *ops,
         .methods = methods,
         .n_methods = ARRAY_SIZE(methods),
     };
-    if (rrd_load_config() != 0)
-        return -1;
 
     return ubus_add_object(ctx, &obj);
 }
